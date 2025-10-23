@@ -24,6 +24,7 @@ const __dirname = path.dirname(__filename);
 
 // ---- App setup ----
 const app = express();
+<<<<<<< HEAD
 // app.use(cors());
 // app.use(express.json({ limit: "1mb" }));
 app.use(cors({
@@ -33,6 +34,10 @@ app.use(cors({
 }));
 app.use(express.json()); 
 
+=======
+app.use(cors());
+app.use(express.json({ limit: "1mb" }));
+>>>>>>> 9429ab00d831cc65a14359d4109d16ee0ecea6da
 
 // ---------- Portfolio loader (robust path detection) ----------
 function findFirstExisting(paths) {
@@ -130,6 +135,7 @@ app.post("/api/chat", async (req, res) => {
 app.post("/api/send", async (req, res) => {
   const { name, email, subject, message } = req.body || {};
 
+<<<<<<< HEAD
   if (![name, email, subject, message].every(Boolean)) {
     return res
       .status(400)
@@ -178,6 +184,46 @@ Message: ${message}`,
 });
 
 
+=======
+  // 1) Input validation
+  if (!name || !email || !subject || !message) {
+    return res.status(400).json({ success: false, message: "All fields are required" });
+  }
+
+  // 2) Env check
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+    console.error("ERROR: GMAIL_USER or GMAIL_PASS missing in .env");
+    return res.status(500).json({ success: false, message: "Server email configuration is missing." });
+  }
+
+  try {
+    // 3) Create transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS, // Gmail App Password (not your normal password)
+      },
+    });
+
+    // 4) Compose email
+    const mailOptions = {
+      from: email, // sender is user
+      to: process.env.GMAIL_USER, // receiver is site owner
+      subject: `New Contact Form: ${subject}`,
+      text: `Name: ${name}\nEmail: ${email}\nSubject: ${subject}\nMessage: ${message}`,
+    };
+
+    // 5) Send
+    await transporter.sendMail(mailOptions);
+    res.json({ success: true, message: "Message sent successfully!" });
+  } catch (err) {
+    console.error("Error sending email:", err);
+    res.status(500).json({ success: false, message: "Error sending message" });
+  }
+});
+
+>>>>>>> 9429ab00d831cc65a14359d4109d16ee0ecea6da
 // ---------- Start ----------
 const PORT = process.env.PORT || 4000; // keep 4000 if you’re already using that
 app.listen(PORT, () => {
